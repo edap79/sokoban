@@ -1,19 +1,45 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset=utf-8 />
-
-  <title>Sokoban</title>
-</head>
-<body>
-  <div>
-    <h1>Sokoban</h1>
-    <div id="gameDiv">
-      <script src="js/sokoban.js"></script>
-      <script src="js/game.js"></script>
+  <head>
+    <meta charset=utf-8 />
+    <title>Sokoban</title>
+    <link rel="stylesheet" media="screen" href="css/sokoban.css">
+  </head>
+  <body>
+    <div>
+      <h1 id="center">Sokoban</h1>
+      <div id="rcorners">
+        <div id="wrapper">
+          <div id="content">
+            <h5 id="levelText"></h5>
+            <div id="gameDiv">
+              <script src="js/levels.js"></script>
+              <script src="js/sokoban.js"></script>
+            </div>
+          </div>
+          <div id="sidebar">
+            <div id="sidebarDiv">
+                <p>Select player:</p>
+                <select id="player">
+                    <option value="1" selected="selected">Ray</option>
+                    <option value="2">Bob</option>
+                    <option value="3">Pokemon</option>
+                </select>
+            </div>
+            <div>
+                <button type="button" onclick="restartLevel()">Restart Level</button>
+            </div>
+            <br>
+            <div id="rcorners2">
+                <h3 align="center">You win!</h3>
+                <button id="nextButton" type="button" onclick="nextLevel()">Next Level</button>
+            </div>
+          </div>
+          <div id="cleared"></div>
+        </div>
+      </div>
+      <div id="footer">
+      </div>
     </div>
-    <div id="footer">
-    </div>
-  </div>
-</body>
+  </body>
 </html>

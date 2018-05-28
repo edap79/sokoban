@@ -1,16 +1,40 @@
+// Store the current level
+var currentLevel = 0;
+// Total levels
+var totalLevels = 5;
 
+/**
+ * Game class
+ */
+function Game() {
+	// Create the game
+	this.main = function () {
+		// Set terrain data
+		var mapTerrains = [
+				new MapTerrain("Goal", "+", "", true, false),
+				new MapTerrain("Floor", ".", "", true, false),
+				new MapTerrain("Player", "p", "", false, true),
+				new MapTerrain("Slider", "o", "", false, true),
+				new MapTerrain("Wall", "x", "", false, false),
+			];
 
-// extensions
+		// Create level
+		var level = new Level("Level " + currentLevel, new Map(mapTerrains, getLevel(currentLevel)));
+		// Initialize display and input
+		Globals.Instance.initialize(new Coords(360, 360), level);
+		// For current level text
+		document.getElementById("levelText").innerText = "Level " + (currentLevel + 1);
+	}
+}
 
-function ArrayExtensions()
-{
-	// do nothing
+/**
+ * Array Extensions
+ */
+function ArrayExtensions() {
 }
 {
-	Array.prototype.addLookups = function(keyName)
-	{
-		for (var i = 0; i < this.length; i++)
-		{
+	Array.prototype.addLookups = function (keyName) {
+		for (var i = 0; i < this.length; i++) {
 			var item = this[i];
 			var key = item[keyName];
 			this[key] = item;
@@ -18,184 +42,146 @@ function ArrayExtensions()
 	}
 }
 
-// classes
-
-function Coords(x, y)
-{
+/**
+ * Class for the coordinates of the game
+ */
+function Coords(x, y) {
 	this.x = x;
 	this.y = y;
 }
 {
-	Coords.prototype.add = function(other)
-	{
+	Coords.prototype.add = function (other) {
 		this.x += other.x;
 		this.y += other.y;
+
 		return this;
 	}
 
-	Coords.prototype.clone = function()
-	{
+	Coords.prototype.clone = function () {
 		return new Coords(this.x, this.y);
 	}
 
-	Coords.prototype.divide = function(other)
-	{
+	Coords.prototype.divide = function (other) {
 		this.x /= other.x;
 		this.y /= other.y;
+
 		return this;
 	}
 
-	Coords.prototype.equals = function(other)
-	{
-		var returnValue = 
-		(
-			this.x == other.x 
-			&& this.y == other.y
-		);
+	Coords.prototype.equals = function (other) {
+		var returnValue = (this.x == other.x && this.y == other.y);
+
 		return returnValue;
 	}
 
-	Coords.prototype.multiply = function(other)
-	{
+	Coords.prototype.multiply = function (other) {
 		this.x *= other.x;
 		this.y *= other.y;
+
 		return this;
 	}
 
-	Coords.prototype.overwriteWith = function(other)
-	{
+	Coords.prototype.overwriteWith = function (other) {
 		this.x = other.x;
 		this.y = other.y;
+
 		return this;
 	}
 }
 
-function DisplayHelper()
-{
-	// do nothing
+/**
+ * Helper for graphic functions
+ */
+function DisplayHelper() {
 }
 {
-	DisplayHelper.prototype.clear = function()
-	{
+	DisplayHelper.prototype.clear = function () {
 		this.graphics.fillStyle = "White";
-		this.graphics.fillRect
-		(
-			0, 
-			0,
-			this.viewSizeInPixels.x,
-			this.viewSizeInPixels.y
-		);
+		this.graphics.fillRect(0, 0, this.viewSizeInPixels.x, this.viewSizeInPixels.y);
 
 		this.graphics.strokeStyle = "Gray";
-		this.graphics.strokeRect
-		(
-			0, 
-			0,
-			this.viewSizeInPixels.x,
-			this.viewSizeInPixels.y
-		);
+		this.graphics.strokeRect(0, 0, this.viewSizeInPixels.x, this.viewSizeInPixels.y);
 	}
 
-	DisplayHelper.prototype.drawLevel = function(level)
-	{
+	DisplayHelper.prototype.drawLevel = function (level) {
 		this.clear();
 		this.drawMap(level.map);
 	}
 
-	DisplayHelper.prototype.drawMap = function(map)
-	{
+	DisplayHelper.prototype.drawImage = function (img, drawPos, mapCellSizeInPixels) {
+		if (img.naturalWidth === 0)
+			return;
+
+		var pat = this.graphics.createPattern(img, "repeat");
+		this.graphics.fillStyle = pat;
+		this.graphics.fillRect(drawPos.x, drawPos.y, mapCellSizeInPixels.x, mapCellSizeInPixels.y);
+	}
+
+	DisplayHelper.prototype.drawMap = function (map) {
 		var mapSizeInCells = map.sizeInCells;
-		var mapCellSizeInPixels = this.viewSizeInPixels.clone().divide
-		(
-			mapSizeInCells
-		);
+		var mapCellSizeInPixels = this.viewSizeInPixels.clone().divide(mapSizeInCells);
+
 		var cellPos = new Coords(0, 0);
 		var drawPos = new Coords(0, 0);
 
-		for (var y = 0; y < mapSizeInCells.y; y++)
-		{
+		for (var y = 0; y < mapSizeInCells.y; y++) {
 			cellPos.y = y;
 
-			for (var x = 0; x < mapSizeInCells.x; x++)
-			{
+			for (var x = 0; x < mapSizeInCells.x; x++) {
 				cellPos.x = x;
 
 				var cellToDraw = map.cellAtPos(cellPos);
 
-				if (cellToDraw.color != null)
-				{
-					drawPos.overwriteWith
-					(
-						cellPos
-					).multiply
-					(
-						mapCellSizeInPixels
-					);
-	
-					this.graphics.fillStyle = cellToDraw.color;
-		
-					this.graphics.fillRect
-					(
-						drawPos.x, drawPos.y,
-						mapCellSizeInPixels.x,
-						mapCellSizeInPixels.y
-					);
+				if (cellToDraw.color != null) {
+					drawPos.overwriteWith(cellPos).multiply(mapCellSizeInPixels);
+
+					if (cellToDraw.name == "Floor") {
+						var img = new Image();
+						img.src = "img/floor1.jpg";
+						this.drawImage(img, drawPos, mapCellSizeInPixels);
+					} else if (cellToDraw.name == "Wall") {
+						var img = new Image();
+						img.src = "img/fance1.jpg";
+						this.drawImage(img, drawPos, mapCellSizeInPixels);
+					}
+					else {
+						var img = new Image();
+						img.src = "img/hole1.png";
+						this.drawImage(img, drawPos, mapCellSizeInPixels);
+					}
 				}
 			}
 		}
 
 		var colorSlider = map.terrains["Slider"].color;
 
-		for (var i = 0; i < map.sliders.length; i++)
-		{
+		for (var i = 0; i < map.sliders.length; i++) {
 			var slider = map.sliders[i];
 
-			drawPos.overwriteWith
-			(
-				slider.pos
-			).multiply
-			(
-				mapCellSizeInPixels
-			);
-			
-			this.graphics.fillStyle = colorSlider;
-		
-			this.graphics.fillRect
-			(
-				drawPos.x, drawPos.y,
-				mapCellSizeInPixels.x,
-				mapCellSizeInPixels.y
-			);
+			drawPos.overwriteWith(slider.pos).multiply(mapCellSizeInPixels);
+
+			var img = new Image();
+			img.src = "img/box1.png";
+			this.drawImage(img, drawPos, mapCellSizeInPixels);
 		}
 
 		var colorPlayer = map.terrains["Player"].color;
+		drawPos.overwriteWith(map.player.pos).multiply(mapCellSizeInPixels);
 
-		drawPos.overwriteWith
-		(
-			map.player.pos
-		).multiply
-		(
-			mapCellSizeInPixels
-		);
-
-		this.graphics.fillStyle = colorPlayer;
-		
-		this.graphics.fillRect
-		(
-			drawPos.x, drawPos.y,
-			mapCellSizeInPixels.x,
-			mapCellSizeInPixels.y
-		);
+		var img = new Image();
+		img.src = "img/character" + document.getElementById("player").value + ".png";
+		img.visible = false;
+		this.drawImage(img, drawPos, mapCellSizeInPixels);
 	}
 
-	DisplayHelper.prototype.initialize = function(viewSizeInPixels)
-	{
+	DisplayHelper.prototype.initialize = function (viewSizeInPixels) {
 		this.viewSizeInPixels = viewSizeInPixels;
-		
+
 		var canvas = document.createElement("canvas");
+		canvas.id = "canvas";
 		canvas.width = viewSizeInPixels.x;
 		canvas.height = viewSizeInPixels.y;
-		
+
 		this.graphics = canvas.getContext("2d");
 
 		var gameDiv = document.getElementById("gameDiv");
@@ -203,161 +189,127 @@ function DisplayHelper()
 	}
 }
 
-function Globals()
-{
-	// do nothing
+/**
+ * Helper for globals instances
+ */
+function Globals() {
 }
 {
 	Globals.Instance = new Globals();
 
-	Globals.prototype.initialize = function(viewSizeInPixels, level)
-	{
+	Globals.prototype.initialize = function (viewSizeInPixels, level) {
 		this.level = level;
 
 		this.displayHelper = new DisplayHelper();
 		this.displayHelper.initialize(viewSizeInPixels);
 
-		this.timer = setInterval
-		(
-			this.handleEventTimerTick.bind(this),
-			150 // millisecondsPerTimerTick
-		);
-
+		this.timer = setInterval(this.handleEventTimerTick.bind(this), 130);
 		this.inputHelper = new InputHelper();
 		this.inputHelper.initialize();
 	}
 
-	// events
+	Globals.prototype.stop = function () {
+		Globals.Instance.displayHelper.clear();
+		this.inputHelper.finalize();
+		clearInterval(this.timer);
+	}
 
-	Globals.prototype.handleEventTimerTick = function()
-	{
+	Globals.prototype.handleEventTimerTick = function () {
 		this.level.updateForTimerTick();
 	}
 }
 
-function InputHelper()
-{
-	// do nothing
+/**
+ * Helper for keyboard events
+ */
+function InputHelper() {
 }
 {
-	InputHelper.prototype.finalize = function()
-	{
+	InputHelper.prototype.finalize = function () {
 		this.keyCodePressed = null;
 		document.body.onkeydown = null;
 		document.body.onkeyup = null;
 	}
-	
-	InputHelper.prototype.initialize = function()
-	{
+
+	InputHelper.prototype.initialize = function () {
 		document.body.onkeydown = this.handleEventKeyDown.bind(this);
 		document.body.onkeyup = this.handleEventKeyUp.bind(this);
 	}
 
-	// events
-
-	InputHelper.prototype.handleEventKeyDown = function(event)
-	{
+	InputHelper.prototype.handleEventKeyDown = function (event) {
 		this.keyCodePressed = event.keyCode;
 	}
 
-	InputHelper.prototype.handleEventKeyUp = function(event)
-	{
+	InputHelper.prototype.handleEventKeyUp = function (event) {
 		this.keyCodePressed = null;
 	}
 }
 
-function Level(name, map)
-{
+/**
+ * Level class
+ */
+function Level(name, map) {
 	this.name = name;
 	this.map = map;
 }
 {
-	Level.prototype.updateForTimerTick = function()
-	{
+	Level.prototype.updateForTimerTick = function () {
 		Globals.Instance.displayHelper.drawLevel(this);
 
 		var inputHelper = Globals.Instance.inputHelper;
 
-		if (inputHelper.keyCodePressed == 65) // a
+		if (inputHelper.keyCodePressed == 37) // Left
 		{
-			this.updateForTimerTick_PlayerMove
-			(
-				new Coords(-1, 0)
-			);
+			this.updateForTimerTick_PlayerMove(new Coords(-1, 0));
 		}
-		else if (inputHelper.keyCodePressed == 68) // d
+		else if (inputHelper.keyCodePressed == 39) // Right
 		{
-			this.updateForTimerTick_PlayerMove
-			(
-				new Coords(1, 0)
-			);
+			this.updateForTimerTick_PlayerMove(new Coords(1, 0));
 		}
-		else if (inputHelper.keyCodePressed == 83) // s
+		else if (inputHelper.keyCodePressed == 40) // Down
 		{
-			this.updateForTimerTick_PlayerMove
-			(
-				new Coords(0, 1)
-			);
+			this.updateForTimerTick_PlayerMove(new Coords(0, 1));
 		}
-		else if (inputHelper.keyCodePressed == 87) // w
+		else if (inputHelper.keyCodePressed == 38) // Up
 		{
-			this.updateForTimerTick_PlayerMove
-			(
-				new Coords(0, -1)
-			);
+			this.updateForTimerTick_PlayerMove(new Coords(0, -1));
 		}
 	}
 
-	Level.prototype.updateForTimerTick_PlayerMove = function(directionToMove)
-	{
+	Level.prototype.updateForTimerTick_PlayerMove = function (directionToMove) {
 		var playerToMove = this.map.player;
-		var playerPosNext = playerToMove.pos.clone().add
-		(
-			directionToMove
-		);
+		var playerPosNext = playerToMove.pos.clone().add(directionToMove);
+
 		var map = this.map;
 		var cellAtPlayerPosNext = map.cellAtPos(playerPosNext);
 
-		if (cellAtPlayerPosNext.isPassable == true)
-		{
+		if (cellAtPlayerPosNext.isPassable == true) {
 			var sliderAtPlayerPosNext = map.sliderAtPos(playerPosNext);
 
-			if (sliderAtPlayerPosNext == null)
-			{
+			if (sliderAtPlayerPosNext == null) {
 				playerToMove.pos.add(directionToMove);
 			}
-			else
-			{
+			else {
 				var canSliderSlide = true;
 
-				var sliderPosNext = playerPosNext.clone().add
-				(
-					directionToMove
-				);
+				var sliderPosNext = playerPosNext.clone().add(directionToMove);
 				var cellAtSliderPosNext = map.cellAtPos(sliderPosNext);
-				if (cellAtSliderPosNext.isPassable == false)
-				{
+				if (cellAtSliderPosNext.isPassable == false) {
 					canSliderSlide = false;
 				}
-				else
-				{
-					var sliderOtherAtSliderPosNext = this.map.sliderAtPos
-					(
-						sliderPosNext
-					);
-					if (sliderOtherAtSliderPosNext != null)
-					{
+				else {
+					var sliderOtherAtSliderPosNext = this.map.sliderAtPos(sliderPosNext);
+
+					if (sliderOtherAtSliderPosNext != null) {
 						canSliderSlide = false;
 					}
 				}
 
-				if (canSliderSlide == true)
-				{
+				if (canSliderSlide == true) {
 					playerToMove.pos.add(directionToMove);
 					sliderAtPlayerPosNext.pos.add(directionToMove);
 
-					if (cellAtSliderPosNext.name == "Goal")
-					{
+					if (cellAtSliderPosNext.name == "Goal") {
 						this.victoryCheck();
 					}
 				}
@@ -365,28 +317,23 @@ function Level(name, map)
 		}
 	}
 
-	Level.prototype.victoryCheck = function()
-	{
+	Level.prototype.victoryCheck = function () {
 		var areAllGoalCellsOccupiedBySliders = true;
 
 		var map = this.map;
 		var terrainGoal = map.terrains["Goal"];
 		var cellPos = new Coords(0, 0);
 
-		for (var y = 0; y < map.sizeInCells.y; y++)
-		{
+		for (var y = 0; y < map.sizeInCells.y; y++) {
 			cellPos.y = y;
 
-			for (var x = 0; x < map.sizeInCells.x; x++)
-			{
+			for (var x = 0; x < map.sizeInCells.x; x++) {
 				cellPos.x = x;
 
 				var terrainAtPos = map.cellAtPos(cellPos);
-				if (terrainAtPos == terrainGoal)
-				{
+				if (terrainAtPos == terrainGoal) {
 					var sliderAtPos = map.sliderAtPos(cellPos);
-					if (sliderAtPos == null)
-					{
+					if (sliderAtPos == null) {
 						areAllGoalCellsOccupiedBySliders = false;
 						y = map.sizeInCells.y;
 						break;
@@ -395,90 +342,79 @@ function Level(name, map)
 			}
 		}
 
-		if (areAllGoalCellsOccupiedBySliders == true)
-		{
+		if (areAllGoalCellsOccupiedBySliders == true) {
 			Globals.Instance.inputHelper.finalize();
 			Globals.Instance.displayHelper.drawLevel(this);
+			document.getElementById("rcorners2").style.display = "block";
 
-			var divWinMessage = document.createElement("div");
-			divWinMessage.innerHTML = "You win!";
-			document.body.appendChild(divWinMessage);
+			if (currentLevel == totalLevels - 1)
+				document.getElementById("nextButton").style.display = "none";
 		}
 	}
 }
 
-function Map(terrains, cellsAsStrings)
-{
+/**
+ * Map class
+ */
+function Map(terrains, cellsAsStrings) {
 	this.terrains = terrains;
 	this.terrains.addLookups("name");
 	this.terrains.addLookups("symbol");
 	this.cellsAsStrings = cellsAsStrings;
 
-	this.sizeInCells = new Coords
-	(
-		this.cellsAsStrings[0].length,
-		this.cellsAsStrings.length
-	);
+	this.sizeInCells = new Coords(this.cellsAsStrings[0].length,
+		this.cellsAsStrings.length);
 
 	this.movablesInitialize();
 }
 {
-	Map.prototype.cellAtPos = function(cellPos)
-	{
+	Map.prototype.cellAtPos = function (cellPos) {
 		var terrainSymbol = this.cellsAsStrings[cellPos.y].charAt(cellPos.x);
 		var terrain = this.terrains[terrainSymbol];
+
 		return terrain;
 	}
 
-	Map.prototype.movablesInitialize = function()
-	{
+	Map.prototype.movablesInitialize = function () {
 		this.sliders = [];
 
 		var terrainSymbolForFloor = this.terrains["Floor"].symbol;
 		var cellPos = new Coords(0, 0);
 
-		for (var y = 0; y < this.sizeInCells.y; y++)
-		{
+		for (var y = 0; y < this.sizeInCells.y; y++) {
 			cellPos.y = y;
 			var cellRowAsString = this.cellsAsStrings[y];
 
-			for (var x = 0; x < this.sizeInCells.x; x++)
-			{
+			for (var x = 0; x < this.sizeInCells.x; x++) {
 				cellPos.x = x;
 				var terrainSymbol = cellRowAsString.charAt(x);
 				var terrain = this.terrains[terrainSymbol];
-				if (terrain.isMovable == true)
-				{
-					cellRowAsString = 
+				if (terrain.isMovable == true) {
+					cellRowAsString =
 						cellRowAsString.substr(0, x)
 						+ terrainSymbolForFloor
 						+ cellRowAsString.substr(x + 1)
 				}
 
-				if (terrain.name == "Player")
-				{
+				if (terrain.name == "Player") {
 					this.player = new Player(cellPos.clone());
 				}
-				else if (terrain.name == "Slider")
-				{
+				else if (terrain.name == "Slider") {
 					var slider = new Slider(cellPos.clone());
 					this.sliders.push(slider);
 				}
 			}
 
 			this.cellsAsStrings[y] = cellRowAsString;
-		} 
+		}
 	}
 
-	Map.prototype.sliderAtPos = function(cellPos)
-	{
+	Map.prototype.sliderAtPos = function (cellPos) {
 		var returnValue = null;
 
-		for (var i = 0; i < this.sliders.length; i++)
-		{
+		for (var i = 0; i < this.sliders.length; i++) {
 			var slider = this.sliders[i];
-			if (slider.pos.equals(cellPos) == true)
-			{
+			if (slider.pos.equals(cellPos) == true) {
 				returnValue = slider;
 				break;
 			}
@@ -488,8 +424,10 @@ function Map(terrains, cellsAsStrings)
 	}
 }
 
-function MapTerrain(name, symbol, color, isPassable, isMovable)
-{
+/**
+ * MapTerrain class
+ */
+function MapTerrain(name, symbol, color, isPassable, isMovable) {
 	this.name = name;
 	this.symbol = symbol;
 	this.color = color;
@@ -497,13 +435,47 @@ function MapTerrain(name, symbol, color, isPassable, isMovable)
 	this.isMovable = isMovable;
 }
 
-function Player(pos)
-{
+/**
+ * Player class
+ */
+function Player(pos) {
 	this.pos = pos;
 }
 
-function Slider(pos)
-{
+/**
+ * Slider class
+ */
+function Slider(pos) {
 	this.pos = pos;
 }
+
+/**
+ * Load the next level 
+ */
+function nextLevel() {
+	Globals.Instance.stop();
+	currentLevel++;
+	var gameDiv = document.getElementById("gameDiv");
+	gameDiv.removeChild(document.getElementById("canvas"));
+	document.getElementById("rcorners2").style.display = "none";
+	new Game().main();
+}
+
+/**
+ * Restart level 
+ */
+function restartLevel() {
+	Globals.Instance.stop();
+	var gameDiv = document.getElementById("gameDiv");
+	gameDiv.removeChild(document.getElementById("canvas"));
+	new Game().main();
+}
+
+/**
+ * Create the game.
+ */
+new Game().main();
+
+
+
 

@@ -1,0 +1,63 @@
+body {
+  background-color:DeepSkyBlue;
+}
+
+#center {
+width: 100%;
+height: 10%;
+text-align: center;
+position: relative;
+top: 40%;
+}
+
+#rcorners {
+border-radius: 25px;
+background: white;
+padding: 20px; 
+width: 70%;
+height: auto; 
+margin: auto;
+}
+
+#rcorners2 {
+  border-radius: 15px;
+  border: 2px solid DeepSkyBlue;
+  padding: 20px; 
+  width: 70%;
+  height: 80px; 
+  display: none;
+}
+
+#rcorners2 button {
+  margin:0 auto;
+  display:block;
+}
+
+#wrapper {
+margin-right: 200px;
+}
+
+#content {
+float: left;
+width: 100%;
+}
+
+#sidebar {
+float: right;
+width: 200px;
+margin-right: -200px;
+padding-top: 45px;
+}
+
+#cleared {
+clear: both;
+}
+
+#sidebarDiv{
+  display:flex; flex-direction: row; align-items: center
+}
+
+#sidebar p {
+  padding-right: 10px;
+}
+
